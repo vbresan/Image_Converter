@@ -1,0 +1,26 @@
+Date:    2020.12.04
+Version: 1.0.5
+Changes:
+* Deleting output file on failure.
+
+Date:    2020.12.03
+Version: 1.0.4
+Changes:
+* Bug fix: catching out of memory error.
+
+Date:    2020.12.01
+Version: 1.0.3
+Changes:
+* Bug fix: catching an exception when detecting mime type.
+
+Date:    2020.11.02
+Version: 1.0.1
+Changes:
+* Displaying output folder on the main screen.
+* Displaying toast message instead of dialog when conversion is finished.
+* Enabling conversion from GIF to TIF.
+
+Date:    2020.10.25
+Version: 1.0
+Changes:
+* Initial (private) release.

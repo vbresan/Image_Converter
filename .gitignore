@@ -1,0 +1,13 @@
+*.iml
+/.gradle/
+/.idea/
+*.aar
+/gradlew
+/gradlew.bat
+/local.properties
+caches
+**/build/
+/captures
+.externalNativeBuild
+.cxx
+*secrets*

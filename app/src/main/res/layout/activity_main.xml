@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="5dp"
+    android:orientation="vertical"
+    tools:context=".MainActivity"
+    >
+
+    <LinearLayout
+        android:id="@+id/linearLayoutActiveContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:layout_weight="1"
+        >
+        <Button
+            android:text="@string/add_files"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onButtonClickAddFiles"
+        />
+
+        <TextView
+            android:id="@+id/textViewInputFiles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+        />
+
+        <ListView
+            android:id="@+id/listViewInputFiles"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@drawable/border"
+            android:layout_weight="1"
+        />
+
+        <TextView
+            android:text="@string/output_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+        />
+
+        <TextView
+            android:id="@+id/textViewOutputFolder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:paddingBottom="5dp"
+        />
+
+        <TextView
+            android:text="@string/output_formats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+        />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <CheckBox
+                android:id="@+id/checkBoxBMP"
+                android:text="@string/bmp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+                android:visibility="visible"
+            />
+            <CheckBox
+                android:id="@+id/checkBoxJPEG"
+                android:text="@string/jpg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+            />
+            <CheckBox
+                android:id="@+id/checkBoxPNG"
+                android:text="@string/png"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+            />
+            <CheckBox
+                android:id="@+id/checkBoxTIF"
+                android:text="@string/tif"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+                android:visibility="visible"
+            />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <CheckBox
+                android:id="@+id/checkBoxWEBP"
+                android:text="@string/webp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:layout_weight="1"
+            />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+    />
+
+    <ProgressBar
+        android:id="@+id/progressBarConversion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:visibility="invisible"
+    />
+
+    <Button
+        android:id="@+id/buttonStartConversion"
+        android:text="@string/start_conversion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onButtonClickStartConversion"
+    />
+
+    <Button
+        android:id="@+id/buttonStopConversion"
+        android:text="@string/stop_conversion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:onClick="onButtonClickStopConversion"
+    />
+
+</LinearLayout>

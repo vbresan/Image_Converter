@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+    <!ENTITY price "€15 EUR">
+]>
+<resources>
+    <string name="output_format_not_available">Selected output image format is not available in free app version.</string>
+    <string name="purchase_text_benefits">The full app version has no ads and allows you as well to:</string>
+    <string name="bullet">&#8226;</string>
+    <string name="benefit_1">Convert images to and from TIF format</string>
+    <string name="benefit_2">Convert images to BMP format</string>
+    <string name="purchase_text_price">You can unlock the full version for only &price; a year.</string>
+    <string name="price">&price;</string>
+    <string name="purchase_text_trial">Not sure yet? Try out our 3-day free trial.</string>
+    <string name="unlock_full_version">Unlock full version now</string>
+    <string name="input_format_not_available">Free app version supports only BMP, GIF, JPG, PNG and WEBP as input image formats.</string>
+    <string name="try_again">Please try again later or contact support.</string>
+</resources>
