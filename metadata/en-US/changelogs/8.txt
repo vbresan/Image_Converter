@@ -1,4 +1,4 @@
-Date:    2025.11.xx
+Date:    2025.11.03
 Version: 1.0.6
 Changes:
 * Updating the build procedure.
