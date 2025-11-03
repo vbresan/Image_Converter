@@ -1,0 +1,4 @@
+Date:    2020.12.04
+Version: 1.0.5
+Changes:
+* Deleting output file on failure.

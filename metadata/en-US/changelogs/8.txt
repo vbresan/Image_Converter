@@ -1,0 +1,5 @@
+Date:    2025.11.xx
+Version: 1.0.6
+Changes:
+* Updating the build procedure.
+* Updating Google Play Billing library. (google version only)

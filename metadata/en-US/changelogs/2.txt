@@ -1,0 +1,7 @@
+Date:    2020.11.02
+Version: 1.0.1
+Changes:
+* Adding interstitial ads. (google version only)
+* Displaying output folder on the main screen.
+* Displaying toast message instead of dialog when conversion is finished.
+* Enabling conversion from GIF to TIF.

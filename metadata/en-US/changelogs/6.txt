@@ -1,0 +1,4 @@
+Date:    2020.12.03
+Version: 1.0.4
+Changes:
+* Bug fix: catching out of memory error.
