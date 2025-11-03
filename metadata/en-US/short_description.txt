@@ -1,0 +1,1 @@
+Convert images between formats: BMP, GIF, JPG, PNG, TIF, WEBP
