@@ -16,6 +16,7 @@ android {
         versionCode 8
         versionName "1.0.6"
 
+        setProperty("archivesBaseName", "$applicationId-$versionName")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -42,6 +43,11 @@ android {
                 includeInBundle = false
             }
         }
+    }
+
+    // TODO: remove this after targeting the latest SDK version
+    lintOptions {
+        disable "ExpiredTargetSdkVersion"
     }
 }
 
