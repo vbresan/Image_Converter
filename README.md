@@ -18,3 +18,7 @@ App enables users to convert various image files into file type of their choice.
 - Supported output formats: BMP<sup>1</sup>, JPG, PNG, TIF<sup>1</sup>, WEBP
 
 <sup>1</sup> - if the app is obtained via Google Play, the feature is available in paid version only.
+
+## Get it on ...
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=biz.binarysolutions.imageconverter.ggl)
+[<img src="https://raw.githubusercontent.com/andOTP/andOTP/master/assets/badges/get-it-on-github.png" alt="Get it on GitHub" height="80">](https://github.com/vbresan/Image_Converter/releases/latest)
