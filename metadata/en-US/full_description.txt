@@ -1,8 +1,10 @@
+Note: The app is targeting Android API version 30. Currently it does not work with newer devices that do not allow direct filesystem access.
+
 App enables users to convert various image files into file type of their choice. Both file by file and batch importing/exporting are supported. Supported formats: BMP, GIF, JPG, PNG, TIF, WEBP.
 
 - Batch importing/exporting.
-- Supported input formats:  BMP, GIF, JPG, PNG, TIF (*), WEBP
-- Supported output formats: BMP (*), JPG, PNG, TIF (*), WEBP
+- Supported input formats:  BMP, GIF, JPG, PNG, TIF¹, WEBP
+- Supported output formats: BMP¹, JPG, PNG, TIF¹, WEBP
 
 
-* - if the app is obtained via Google Play, the feature is available in paid version
+¹ - if the app is obtained via Google Play, the feature is available in paid version
