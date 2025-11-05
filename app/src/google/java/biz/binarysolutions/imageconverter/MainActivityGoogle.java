@@ -1,11 +1,12 @@
 package biz.binarysolutions.imageconverter;
 
+import static com.android.billingclient.api.BillingClient.SkuType.SUBS;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,25 +16,32 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
-import com.android.billingclient.api.BillingClient.SkuType;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingFlowParams.ProductDetailsParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
-import com.google.android.gms.ads.AdListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryProductDetailsParams.Product;
+import com.android.billingclient.api.QueryProductDetailsResult;
+import com.android.billingclient.api.QueryPurchasesParams;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,42 +60,53 @@ public class MainActivityGoogle extends MainActivity
     implements
         PurchasesUpdatedListener,
         BillingClientStateListener,
-        SkuDetailsResponseListener,
         AcknowledgePurchaseResponseListener,
+        ProductDetailsResponseListener,
         DialogInterface.OnClickListener {
 
     private static final String PREFERENCES_KEY = "purchaseToken";
     private static final String PRODUCT_ID_SUBS =
         "biz.binarysolutions.imageconverter.yearly_subscription";
 
-    private boolean       isFullVersion = false;
-    private BillingClient billingClient;
-    private SkuDetails    skuDetails;
+    private boolean        isFullVersion = false;
+    private BillingClient  billingClient;
+    private ProductDetails productDetails;
 
-    private InterstitialAd ad;
-    private boolean        showAd = false;
+    private InterstitialAd interstitialAd;
 
-    /**
-     *
-     */
     private void initializeAd() {
 
         if (isFullVersion) {
             return;
         }
 
-        MobileAds.initialize(this);
+        MobileAds.initialize(this, initializationStatus -> InterstitialAd.load(
+            this,
+            getString(R.string.admob_ad_id),
+            new AdRequest.Builder().build(),
+            new InterstitialAdLoadCallback() {
+                @Override
+                public void onAdLoaded(@NonNull InterstitialAd ad) {
+                    interstitialAd = ad;
+                    interstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                        @Override
+                        public void onAdDismissedFullScreenContent() {
+                            interstitialAd = null;
+                        }
 
-        ad = new InterstitialAd(this);
-        ad.setAdUnitId(getString(R.string.admob_ad_id));
-        ad.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {
-                showAd = true;
-            }
-        });
-        ad.loadAd(new AdRequest.Builder().build());
-    }
+                        @Override
+                        public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                            interstitialAd = null;
+                        }
+                    });
+                }
+
+                @Override
+                public void onAdFailedToLoad(@NonNull LoadAdError error) {
+                    interstitialAd = null;
+                }
+        }));
+   }
 
     /**
      *
@@ -115,56 +134,92 @@ public class MainActivityGoogle extends MainActivity
         setCheckBoxListener(R.id.checkBoxTIF,  OutputFormat.TIF);
     }
 
-    /**
-     *
-     */
+    private PendingPurchasesParams getPendingPurchaseParams() {
+        return PendingPurchasesParams.newBuilder()
+            .enableOneTimeProducts()
+            .enablePrepaidPlans()
+            .build();
+    }
+
     private void initializeBillingClient() {
 
         billingClient = BillingClient.newBuilder(this)
+            .enablePendingPurchases(getPendingPurchaseParams())
             .setListener(this)
-            .enablePendingPurchases()
             .build();
 
         billingClient.startConnection(this);
     }
 
-    /**
-     *
-     */
-    private void queryAvailablePurchases() {
+    private List<Product> getProductList() {
 
-        List<String> skuList = new ArrayList<>();
-        skuList.add(PRODUCT_ID_SUBS);
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(skuList).setType(SkuType.SUBS);
-        billingClient.querySkuDetailsAsync(params.build(), this);
+        Product product = Product.newBuilder()
+            .setProductId(PRODUCT_ID_SUBS)
+            .setProductType(BillingClient.ProductType.SUBS)
+            .build();
+
+        List<Product> list = new ArrayList<>();
+        list.add(product);
+
+        return list;
     }
 
-    /**
-     *
-     */
+    private void queryAvailablePurchases() {
+
+        if (billingClient == null) {
+            return;
+        }
+
+        List<Product> productList = getProductList();
+        QueryProductDetailsParams params =
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
+                .build();
+
+        billingClient.queryProductDetailsAsync(params, this);
+    }
+
+    private QueryPurchasesParams getQueryPurchasesParams() {
+        return QueryPurchasesParams.newBuilder().setProductType(SUBS).build();
+    }
+
     private void queryPastPurchases() {
 
         if (billingClient == null) {
             return;
         }
 
-        PurchasesResult result = billingClient.queryPurchases(SkuType.SUBS);
-        onPurchasesUpdated(result.getBillingResult(), result.getPurchasesList());
+        QueryPurchasesParams params = getQueryPurchasesParams();
+        billingClient.queryPurchasesAsync(params, this::onPurchasesUpdated);
     }
 
-    /**
-     *
-     * @param textView
-     */
+    @SuppressWarnings("ConstantConditions")
+    private String getPrice(ProductDetails details) {
+
+        String price = "";
+        try {
+            price = details
+                .getSubscriptionOfferDetails()
+                .get(0)
+                .getPricingPhases()
+                .getPricingPhaseList()
+                .get(0)
+                .getFormattedPrice();
+        } catch (Exception e) {
+            // do nothing
+        }
+
+        return price;
+    }
+
     private void updatePrice(@NonNull TextView textView) {
 
-        if (skuDetails == null) {
+        if (productDetails == null) {
             return;
         }
 
         String oldPrice = Matcher.quoteReplacement(getString(R.string.price));
-        String newPrice = Matcher.quoteReplacement(skuDetails.getPrice());
+        String newPrice = Matcher.quoteReplacement(getPrice(productDetails));
         String oldText  = getString(R.string.purchase_text_price);
         String newText  = oldText.replaceAll(oldPrice, newPrice);
 
@@ -242,6 +297,35 @@ public class MainActivityGoogle extends MainActivity
             savePurchaseToken(purchase.getPurchaseToken());
             acknowledgePurchase(purchase);
         }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private String justGetTheFuckingOfferToken() {
+
+        String offerToken = "";
+        try {
+            offerToken = productDetails
+                .getSubscriptionOfferDetails()
+                .get(0)
+                .getOfferToken();
+        } catch (Exception e) {
+            // do nothing
+        }
+
+        return offerToken;
+    }
+
+    private List<ProductDetailsParams> getProductDetailsParamsList() {
+
+        ProductDetailsParams params = ProductDetailsParams.newBuilder()
+            .setProductDetails(productDetails)
+            .setOfferToken(justGetTheFuckingOfferToken())
+            .build();
+
+        List<ProductDetailsParams> list = new ArrayList<>();
+        list.add(params);
+
+        return list;
     }
 
     @Override
@@ -347,41 +431,24 @@ public class MainActivityGoogle extends MainActivity
     }
 
     @Override
-    public void onSkuDetailsResponse
+    public void onProductDetailsResponse
         (
-            @NonNull  BillingResult    result,
-            @Nullable List<SkuDetails> list
+            @NonNull BillingResult             billingResult,
+            @NonNull QueryProductDetailsResult queryResult
         ) {
 
-        if (result.getResponseCode() != BillingResponseCode.OK) {
-            return;
-        }
-        if (list == null) {
+        if (billingResult.getResponseCode() != BillingResponseCode.OK) {
             return;
         }
 
-        for (SkuDetails skuDetails : list) {
+        List<ProductDetails> list = queryResult.getProductDetailsList();
+        for (ProductDetails details: list) {
 
-            String sku = skuDetails.getSku();
-            if (PRODUCT_ID_SUBS.equals(sku)) {
-                this.skuDetails = skuDetails;
+            String productId = details.getProductId();
+            if (PRODUCT_ID_SUBS.equals(productId)) {
+                productDetails = details;
             }
         }
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-
-        if (skuDetails == null) {
-            Toast.makeText(this, R.string.try_again, Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        BillingFlowParams params = BillingFlowParams.newBuilder()
-            .setSkuDetails(skuDetails)
-            .build();
-
-        billingClient.launchBillingFlow(this, params);
     }
 
     @Override
@@ -390,12 +457,27 @@ public class MainActivityGoogle extends MainActivity
     }
 
     @Override
+    public void onClick(DialogInterface dialog, int which) {
+
+        if (productDetails == null || billingClient == null) {
+            Toast.makeText(this, R.string.try_again, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        List<ProductDetailsParams> list = getProductDetailsParamsList();
+        BillingFlowParams params = BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(list)
+            .build();
+
+        billingClient.launchBillingFlow(this, params);
+    }
+
+    @Override
     public void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
 
-        if (showAd) {
-            ad.show();
-            showAd = false;
+        if (interstitialAd != null) {
+            interstitialAd.show(this);
         }
     }
 }
