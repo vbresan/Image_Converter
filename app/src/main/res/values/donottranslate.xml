@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="directory_name">Image_Converter</string>
+    <string name="directory_name">Image Converter</string>
     <string name="app_fileprovider">biz.binarysolutions.imageconverter.fileprovider</string>
 </resources>
