@@ -20,8 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +35,7 @@ import java.util.List;
 
 import biz.binarysolutions.imageconverter.data.FilenameUriTuple;
 import biz.binarysolutions.imageconverter.data.OutputFormat;
+import biz.binarysolutions.imageconverter.databinding.ActivityMainBinding;
 import biz.binarysolutions.imageconverter.exceptions.ConvertException;
 import biz.binarysolutions.imageconverter.exceptions.DecodeException;
 import biz.binarysolutions.imageconverter.exceptions.EncodeException;
@@ -53,6 +52,8 @@ import biz.binarysolutions.imageconverter.util.PermissionActivity;
  * TODO: add action on selected file in file browser
  */
 public class MainActivity extends PermissionActivity {
+
+    private ActivityMainBinding binding;
 
     private static final int REQUEST_CODE_PICK_FILE = 1;
 
@@ -101,15 +102,8 @@ public class MainActivity extends PermissionActivity {
         return result;
     }
 
-    /**
-     *
-     */
     private void refreshInputFilesNumber() {
-
-        TextView textView = findViewById(R.id.textViewInputFiles);
-        if (textView != null) {
-            textView.setText(getString(R.string.input_files, files.size()));
-        }
+        binding.textViewInputFiles.setText(getString(R.string.input_files, files.size()));
     }
 
     /**
@@ -153,10 +147,6 @@ public class MainActivity extends PermissionActivity {
             .show();
     }
 
-    /**
-     *
-     * @param errors
-     */
     private void displayDialogReceivedExceptions(List<String> errors) {
 
         if (errors.size() == 0) {
@@ -200,46 +190,27 @@ public class MainActivity extends PermissionActivity {
 
     private void setListView() {
 
-        ListView listView = findViewById(R.id.listViewInputFiles);
-        if (listView == null) {
-            return;
-        }
-
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(
+        binding.listViewInputFiles.setAdapter(adapter);
+        binding.listViewInputFiles.setOnItemClickListener(
             (p, v, pos, id) -> displayDialogConfirmFileRemove(pos)
         );
     }
 
-    /**
-     *
-     * @param id
-     * @param format
-     */
-    private void setCheckBoxListener(int id, OutputFormat format) {
-
-        CheckBox checkBox = findViewById(id);
-        if (checkBox == null) {
-            return;
-        }
-
+    private void setCheckBoxListener(CheckBox checkBox, OutputFormat format) {
         checkBox.setOnCheckedChangeListener(
             new OutputFormatListener(outputFormats, format)
         );
     }
 
-    /**
-     *
-     */
     private void setCheckBoxListeners() {
 
-        setCheckBoxListener(R.id.checkBoxJPEG, OutputFormat.JPG);
-        setCheckBoxListener(R.id.checkBoxPNG,  OutputFormat.PNG);
-        setCheckBoxListener(R.id.checkBoxWEBP, OutputFormat.WEBP);
+        setCheckBoxListener(binding.checkBoxJPEG, OutputFormat.JPG);
+        setCheckBoxListener(binding.checkBoxPNG,  OutputFormat.PNG);
+        setCheckBoxListener(binding.checkBoxWEBP, OutputFormat.WEBP);
 
-        setCheckBoxListener(R.id.checkBoxBMP,  OutputFormat.BMP);
-        setCheckBoxListener(R.id.checkBoxTIF,  OutputFormat.TIF);
+        setCheckBoxListener(binding.checkBoxBMP,  OutputFormat.BMP);
+        setCheckBoxListener(binding.checkBoxTIF,  OutputFormat.TIF);
     }
 
     private @Nullable String getMimeType(Uri uri) {
@@ -268,23 +239,16 @@ public class MainActivity extends PermissionActivity {
     private void publishStatus(final String status) {
 
         runOnUiThread(() -> {
-
-            TextView textView = findViewById(R.id.textViewStatus);
-            if (textView != null) {
-                textView.setText(status);
-                textView.setVisibility(View.VISIBLE);
-            }
+            binding.textViewStatus.setText(status);
+            binding.textViewStatus.setVisibility(View.VISIBLE);
         });
     }
 
     private void hideStatus() {
 
         runOnUiThread(() -> {
-            TextView textView = findViewById(R.id.textViewStatus);
-            if (textView != null) {
-                textView.setText("");
-                textView.setVisibility(View.INVISIBLE);
-            }
+            binding.textViewStatus.setText("");
+            binding.textViewStatus.setVisibility(View.INVISIBLE);
         });
     }
 
@@ -505,48 +469,24 @@ public class MainActivity extends PermissionActivity {
     }
 
     private void setAllInteractiveElementsEnabled(final boolean enabled) {
-
         runOnUiThread(() -> {
-
-            View view;
-
-            view = findViewById(R.id.linearLayoutActiveContainer);
-            if (view != null) {
-                setViewAndChildrenEnabled(view, enabled);
-            }
-
-            view = findViewById(R.id.buttonStartConversion);
-            if (view != null) {
-                view.setEnabled(enabled);
-            }
-
-            view = findViewById(R.id.buttonStopConversion);
-            if (view != null) {
-                view.setEnabled(!enabled);
-            }
+            setViewAndChildrenEnabled(binding.activeContainer, enabled);
+            binding.buttonStartConversion.setEnabled(enabled);
+            binding.buttonStopConversion.setEnabled(!enabled);
         });
     }
 
     private void setProgressBarVisible(final int max, final int visibility) {
-
         runOnUiThread(() -> {
-
-            ProgressBar view = findViewById(R.id.progressBarConversion);
-            if (view != null) {
-                view.setMax(max);
-                view.setVisibility(visibility);
-            }
+            binding.progressBarConversion.setMax(max);
+            binding.progressBarConversion.setVisibility(visibility);
         });
     }
 
     private void incrementProgressBar() {
-
         runOnUiThread(() -> {
-
-            ProgressBar view = findViewById(R.id.progressBarConversion);
-            if (view != null) {
-                view.setProgress(view.getProgress() + 1);
-            }
+            int progress = binding.progressBarConversion.getProgress() + 1;
+            binding.progressBarConversion.setProgress(progress);
         });
     }
 
@@ -592,7 +532,9 @@ public class MainActivity extends PermissionActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         setListView();
         setCheckBoxListeners();
