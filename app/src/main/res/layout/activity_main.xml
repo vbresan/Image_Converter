@@ -39,21 +39,6 @@
         />
 
         <TextView
-            android:text="@string/output_folder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-        />
-
-        <TextView
-            android:id="@+id/textViewOutputFolder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:paddingBottom="5dp"
-        />
-
-        <TextView
             android:text="@string/output_formats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

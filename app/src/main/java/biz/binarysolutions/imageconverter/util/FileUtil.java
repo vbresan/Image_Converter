@@ -39,26 +39,4 @@ public class FileUtil {
             }
         }
     }
-
-    /**
-     *
-     * @return
-     */
-    public static File getCachedFile
-        (
-            InputStream is,
-            File        parent,
-            String      filename
-        )
-            throws IOException {
-
-        if (is == null) {
-            throw new IOException("Re-opened input stream is null.");
-        }
-
-        File cachedFile = new File(parent, filename);
-        FileUtil.copy(is, cachedFile);
-
-        return cachedFile;
-    }
 }

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import biz.binarysolutions.imageconverter.data.FilenameUriTuple;
 import biz.binarysolutions.imageconverter.data.OutputFormat;
 import biz.binarysolutions.imageconverter.exceptions.ConvertException;
 import biz.binarysolutions.imageconverter.exceptions.DecodeException;
@@ -329,11 +330,15 @@ public class MainActivityGoogle extends MainActivity
     }
 
     @Override
-    protected void convertUsingNonNativeAPI(File file, OutputFormat format)
+    protected List<FilenameUriTuple> convertUsingNonNativeAPI
+        (
+            File         file,
+            OutputFormat format
+        )
         throws ConvertException {
 
         if (isFullVersion) {
-            super.convertUsingNonNativeAPI(file, format);
+            return super.convertUsingNonNativeAPI(file, format);
         } else {
             throw new DecodeException();
         }

@@ -1,10 +1,11 @@
 package biz.binarysolutions.imageconverter;
 
+import static android.provider.OpenableColumns.DISPLAY_NAME;
+
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,11 +15,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
+import android.provider.MediaStore.Images.Media;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -26,31 +26,32 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import biz.binarysolutions.imageconverter.data.FilenameUriTuple;
 import biz.binarysolutions.imageconverter.data.OutputFormat;
 import biz.binarysolutions.imageconverter.exceptions.ConvertException;
-import biz.binarysolutions.imageconverter.exceptions.CopyException;
 import biz.binarysolutions.imageconverter.exceptions.DecodeException;
 import biz.binarysolutions.imageconverter.exceptions.EncodeException;
+import biz.binarysolutions.imageconverter.exceptions.ExportException;
 import biz.binarysolutions.imageconverter.image.Converter;
 import biz.binarysolutions.imageconverter.image.TiffUtil;
-import biz.binarysolutions.imageconverter.util.FileUtil;
 import biz.binarysolutions.imageconverter.listeners.OutputFormatListener;
+import biz.binarysolutions.imageconverter.util.FileUtil;
 import biz.binarysolutions.imageconverter.util.PermissionActivity;
-
-import static android.widget.AdapterView.OnItemClickListener;
 
 /**
  * TODO: add resize functionality?
  * TODO: copy metadata (exif, etc.)?
- *
+ * TODO: add action on selected file in file browser
  */
 public class MainActivity extends PermissionActivity {
 
@@ -80,8 +81,10 @@ public class MainActivity extends PermissionActivity {
 
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(
-                        OpenableColumns.DISPLAY_NAME));
+                    int columnIndex = cursor.getColumnIndex(DISPLAY_NAME);
+                    if (columnIndex >= 0) {
+                        result = cursor.getString(columnIndex);
+                    }
                 }
 
                 cursor.close();
@@ -134,19 +137,12 @@ public class MainActivity extends PermissionActivity {
 
         files.remove(tuple);
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                adapter.remove(tuple);
-                refreshInputFilesNumber();
-            }
+        new Handler(getMainLooper()).post(() -> {
+            adapter.remove(tuple);
+            refreshInputFilesNumber();
         });
     }
 
-    /**
-     *
-     * @param index
-     */
     private void displayDialogConfirmFileRemove(final int index) {
 
         final FilenameUriTuple tuple = files.get(index);
@@ -155,26 +151,10 @@ public class MainActivity extends PermissionActivity {
             .setTitle(android.R.string.dialog_alert_title)
             .setMessage(getString(R.string.confirm_remove, tuple.getFilename()))
             .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(android.R.string.yes,
-                new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        removeTuple(tuple);
-                    }
-                })
-            .create()
-            .show();
-    }
-
-    /**
-     *
-     */
-    private void displayDialogErrorCreatingOutputDirectory() {
-
-        new AlertDialog.Builder(this)
-            .setTitle(android.R.string.dialog_alert_title)
-            .setMessage(getString(R.string.error_creating_output_directory))
-            .setNegativeButton(android.R.string.ok, null)
+            .setPositiveButton(
+                android.R.string.yes,
+                (dialog, which) -> removeTuple(tuple)
+            )
             .create()
             .show();
     }
@@ -194,56 +174,39 @@ public class MainActivity extends PermissionActivity {
             sb.append(error).append("\n");
         }
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(getMainLooper()).post(() -> {
 
-                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-                View container = inflater.inflate(R.layout.dialog_errors, null);
+            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+            View container = inflater.inflate(R.layout.dialog_errors, null);
 
-                TextView textView = container.findViewById(R.id.textViewErrors);
-                if (textView != null) {
-                    textView.setText(sb);
-                }
-
-                OnClickListener listener = new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        onErrorDialogDismissed();
-                    }
-                };
-
-                new AlertDialog.Builder(MainActivity.this)
-                    .setTitle(android.R.string.dialog_alert_title)
-                    .setView(container)
-                    .setNegativeButton(android.R.string.ok, listener)
-                    .create()
-                    .show();
+            TextView textView = container.findViewById(R.id.textViewErrors);
+            if (textView != null) {
+                textView.setText(sb);
             }
+
+            new AlertDialog.Builder(MainActivity.this)
+                .setTitle(android.R.string.dialog_alert_title)
+                .setView(container)
+                //TODO: call the same method when dialog is cancelled!
+                .setNegativeButton(
+                    android.R.string.ok,
+                    (dialog, which) -> onErrorDialogDismissed()
+                )
+                .create()
+                .show();
         });
     }
 
-    /**
-     *
-     */
     private void displayToastDone() {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-
-                Toast.makeText(
-                    MainActivity.this,
-                    getString(R.string.done),
-                    Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
+        new Handler(getMainLooper()).post(() ->
+            Toast.makeText(
+                this,
+                getString(R.string.done),
+                Toast.LENGTH_SHORT)
+            .show());
     }
 
-    /**
-     *
-     */
     private void setListView() {
 
         ListView listView = findViewById(R.id.listViewInputFiles);
@@ -253,25 +216,9 @@ public class MainActivity extends PermissionActivity {
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> p, View v, int pos, long id) {
-                displayDialogConfirmFileRemove(pos);
-            }
-        });
-    }
-
-    /**
-     *
-     */
-    private void setOutputFolder() {
-
-        TextView textView = findViewById(R.id.textViewOutputFolder);
-        if (textView == null) {
-            return;
-        }
-
-        textView.setText(getOutputFolder().getAbsolutePath());
+        listView.setOnItemClickListener(
+            (p, v, pos, id) -> displayDialogConfirmFileRemove(pos)
+        );
     }
 
     /**
@@ -304,12 +251,7 @@ public class MainActivity extends PermissionActivity {
         setCheckBoxListener(R.id.checkBoxTIF,  OutputFormat.TIF);
     }
 
-    /**
-     *
-     * @param uri
-     * @return
-     */
-    private String getMimeType(Uri uri) {
+    private @Nullable String getMimeType(Uri uri) {
 
         String mimeType = null;
 
@@ -332,64 +274,82 @@ public class MainActivity extends PermissionActivity {
         return mimeType;
     }
 
-    /**
-     *
-     * @param status
-     */
     private void publishStatus(final String status) {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(getMainLooper()).post(() -> {
 
-                TextView textView = findViewById(R.id.textViewStatus);
-                if (textView != null) {
-                    textView.setText(status);
-                    textView.setVisibility(View.VISIBLE);
-                }
+            TextView textView = findViewById(R.id.textViewStatus);
+            if (textView != null) {
+                textView.setText(status);
+                textView.setVisibility(View.VISIBLE);
             }
         });
     }
 
-    /**
-     *
-     */
     private void hideStatus() {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                TextView textView = findViewById(R.id.textViewStatus);
-                if (textView != null) {
-                    textView.setText("");
-                    textView.setVisibility(View.INVISIBLE);
-                }
+        new Handler(getMainLooper()).post(() -> {
+            TextView textView = findViewById(R.id.textViewStatus);
+            if (textView != null) {
+                textView.setText("");
+                textView.setVisibility(View.INVISIBLE);
             }
         });
     }
 
-    /**
-     * TODO: do not overwrite existing file
-     *
-     * @param file
-     */
-    private void copyFile(FilenameUriTuple file) throws CopyException {
+    private String getRelativePath() {
+        return
+            Environment.DIRECTORY_PICTURES
+            + File.separator
+            + getString(R.string.directory_name);
+    }
 
-        publishStatus(getString(R.string.copying, file));
+    private void exportFile(FilenameUriTuple file, String mimeType)
+        throws ExportException {
+        // TODO: do not overwrite existing file
+
+        publishStatus(getString(R.string.exporting, file));
+
+        ContentValues values = new ContentValues();
+        values.put(Media.DISPLAY_NAME, file.getFilename());
+        values.put(Media.MIME_TYPE, mimeType);
+        values.put(Media.RELATIVE_PATH, getRelativePath());
+        values.put(Media.IS_PENDING, 1);
 
         ContentResolver resolver = getContentResolver();
-        File copy = new File(getOutputFolder(), file.getFilename());
+        Uri gallery = Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        Uri uri = resolver.insert(gallery, values);
+        if (uri == null) {
+            throw new ExportException();
+        }
 
         try {
-            InputStream is = resolver.openInputStream(file.getUri());
-            if (is != null) {
-                FileUtil.copy(is, copy);
-            } else {
-                throw new Exception();
+            InputStream  in  = resolver.openInputStream(file.getUri());
+            OutputStream out = resolver.openOutputStream(uri);
+
+            if (in != null && out != null) {
+
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
             }
-        } catch (Exception e) {
-            throw new CopyException(e);
+
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+        } catch (IOException e) {
+            throw new ExportException(e);
         }
+
+        values.clear();
+        values.put(Media.IS_PENDING, 0);
+        resolver.update(uri, values, null, null);
     }
 
     /**
@@ -412,21 +372,19 @@ public class MainActivity extends PermissionActivity {
         return substring + "." + format.getFileExtension();
     }
 
-    /**
-     * TODO: update progress bar
-     *
-     * @param file
-     * @param format
-     * @return
-     */
-    protected void convertUsingNonNativeAPI(File file, OutputFormat format)
+    protected List<FilenameUriTuple> convertUsingNonNativeAPI
+        (
+            File         file,
+            OutputFormat format
+        )
         throws ConvertException {
+        // TODO: update progress bar
 
         if (! TiffUtil.isTiffFile(file)) {
             throw new DecodeException();
         }
 
-        TiffUtil.convertFromTIF(file, format, getOutputFolder());
+        return TiffUtil.convertFromTIF(file, format, getCacheDir());
     }
 
     /**
@@ -447,32 +405,40 @@ public class MainActivity extends PermissionActivity {
         return is;
     }
 
-    /**
-     *
-     * @param filename
-     * @param is
-     * @return
-     * @throws DecodeException
-     */
-    private File getCachedFile(String filename, InputStream is)
+    private File getTempFile(String filename, InputStream is)
         throws DecodeException {
 
         try {
-            return FileUtil.getCachedFile(is, getCacheDir(), filename);
+            if (is == null) {
+                throw new IOException("Re-opened input stream is null.");
+            }
+
+            File file = File.createTempFile(filename, "", getCacheDir());
+            FileUtil.copy(is, file);
+
+            return file;
         } catch (IOException e) {
             throw new DecodeException(e);
         }
     }
 
-    /**
-     * TODO: do not overwrite existing file
-     *
-     * @param file
-     * @param format
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void doConvertFile(FilenameUriTuple file, OutputFormat format)
+    private File getTempFile(String filename)
+        throws DecodeException {
+
+        try {
+            return File.createTempFile(filename, "", getCacheDir());
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
+    }
+
+    private List<FilenameUriTuple> doConvertFile
+        (
+            FilenameUriTuple file,
+            OutputFormat     format
+        )
         throws ConvertException {
+        // TODO: do not overwrite existing file
 
         publishStatus(getString(R.string.converting_to, file, format));
 
@@ -493,84 +459,53 @@ public class MainActivity extends PermissionActivity {
         if (bitmap != null) {
             //TODO: extract method - encodeBitmap?
             String outFilename = getNewFilename(inFilename, format);
-            File   outFile     = new File(getOutputFolder(), outFilename);
+            File   outFile     = getTempFile(outFilename);
 
             try {
                 Converter.encodeBitmap(bitmap, format, outFile);
             } catch (IOException e) {
+                //noinspection ResultOfMethodCallIgnored
                 outFile.delete();
                 throw new EncodeException(e);
             } catch (OutOfMemoryError e) {
+                //noinspection ResultOfMethodCallIgnored
                 outFile.delete();
                 throw e;
             }
+
+            return List.of(new FilenameUriTuple(outFilename, Uri.fromFile(outFile)));
         } else {
             is = getInputStream(file.getUri());
-            File cachedFile = getCachedFile(inFilename, is);
+            File tempFile = getTempFile(inFilename, is);
 
             try {
-                convertUsingNonNativeAPI(cachedFile, format);
+                return convertUsingNonNativeAPI(tempFile, format);
             } finally {
-                cachedFile.delete();
+                //noinspection ResultOfMethodCallIgnored
+                tempFile.delete();
             }
         }
     }
 
-    /**
-     *
-     * @param file
-     * @param format
-     */
-    private void convertFile(FilenameUriTuple file, OutputFormat format)
+    private void convertFile(FilenameUriTuple inFile, OutputFormat format)
         throws ConvertException {
 
-        String mimeType = getMimeType(file.getUri());
-        if (format.isMimeType(mimeType)) {
-            copyFile(file);
+        String inMimeType  = getMimeType(inFile.getUri());
+        String outMimeType = format.getMimeType();
+        if (outMimeType.equals(inMimeType)) {
+            exportFile(inFile, outMimeType);
         } else {
-            doConvertFile(file, format);
+            List<FilenameUriTuple> files = doConvertFile(inFile, format);
+            for (FilenameUriTuple file: files) {
+                exportFile(file, outMimeType);
+            }
         }
     }
 
-    /**
-     *
-     */
-    private boolean createOutputDirectory() throws SecurityException {
-
-        File root = Environment.getExternalStorageDirectory();
-        if (root == null) {
-            return false;
-        }
-
-        File directory = new File(root, getString(R.string.directory_name));
-        if (directory.exists() && directory.isDirectory()) {
-            return true;
-        }
-
-        return directory.mkdir();
-    }
-
-    /**
-     *
-     * @return
-     */
-    private File getOutputFolder() {
-
-        File root = Environment.getExternalStorageDirectory();
-        return new File(root, getString(R.string.directory_name));
-    }
-
-    /**
-     *
-     * @param view
-     * @param enabled
-     */
     private void setViewAndChildrenEnabled(View view, boolean enabled) {
 
         view.setEnabled(enabled);
-        if (view instanceof ViewGroup) {
-
-            ViewGroup viewGroup = (ViewGroup) view;
+        if (view instanceof ViewGroup viewGroup) {
             for (int i = 0; i < viewGroup.getChildCount(); i++) {
                 View child = viewGroup.getChildAt(i);
                 setViewAndChildrenEnabled(child, enabled);
@@ -578,80 +513,52 @@ public class MainActivity extends PermissionActivity {
         }
     }
 
-    /**
-     *
-     * @param enabled
-     */
     private void setAllInteractiveElementsEnabled(final boolean enabled) {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(getMainLooper()).post(() -> {
 
-                View view;
+            View view;
 
-                view = findViewById(R.id.linearLayoutActiveContainer);
-                if (view != null) {
-                    setViewAndChildrenEnabled(view, enabled);
-                }
+            view = findViewById(R.id.linearLayoutActiveContainer);
+            if (view != null) {
+                setViewAndChildrenEnabled(view, enabled);
+            }
 
-                view = findViewById(R.id.buttonStartConversion);
-                if (view != null) {
-                    view.setEnabled(enabled);
-                }
+            view = findViewById(R.id.buttonStartConversion);
+            if (view != null) {
+                view.setEnabled(enabled);
+            }
 
-                view = findViewById(R.id.buttonStopConversion);
-                if (view != null) {
-                    view.setEnabled(!enabled);
-                }
+            view = findViewById(R.id.buttonStopConversion);
+            if (view != null) {
+                view.setEnabled(!enabled);
             }
         });
     }
 
-    /**
-     *
-     * @param max
-     * @param visiblity
-     */
-    private void setProgressBarVisible(final int max, final int visiblity) {
+    private void setProgressBarVisible(final int max, final int visibility) {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(getMainLooper()).post(() -> {
 
-                ProgressBar view = findViewById(R.id.progressBarConversion);
-                if (view != null) {
-                    view.setMax(max);
-                    view.setVisibility(visiblity);
-                }
+            ProgressBar view = findViewById(R.id.progressBarConversion);
+            if (view != null) {
+                view.setMax(max);
+                view.setVisibility(visibility);
             }
         });
     }
 
-    /**
-     *
-     */
     private void incrementProgressBar() {
 
-        new Handler(getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(getMainLooper()).post(() -> {
 
-                ProgressBar view = findViewById(R.id.progressBarConversion);
-                if (view != null) {
-                    view.setProgress(view.getProgress() + 1);
-                }
+            ProgressBar view = findViewById(R.id.progressBarConversion);
+            if (view != null) {
+                view.setProgress(view.getProgress() + 1);
             }
         });
     }
 
-    /**
-     *
-     * @param exception
-     * @param filename
-     * @param format
-     * @return
-     */
     private List<String> getErrorMessage
         (
             Throwable    exception,
@@ -663,11 +570,11 @@ public class MainActivity extends PermissionActivity {
 
         if (exception instanceof OutOfMemoryError) {
             errors.add(getString(R.string.out_of_memory, filename, format));
-        } else if (exception instanceof CopyException) {
-            errors.add(getString(R.string.can_not_copy, filename));
+        } else if (exception instanceof ExportException) {
+            errors.add(getString(R.string.can_not_export, filename));
         } else if (exception instanceof DecodeException) {
             errors.add(getString(R.string.can_not_decode, filename));
-        } else { // exception instanceof EncodeException
+        } else if (exception instanceof EncodeException) {
             List<Integer> pages = ((EncodeException) exception).getDirectories();
             if (pages == null || pages.size() == 0) {
                 errors.add(getString(R.string.can_not_encode, filename, format));
@@ -676,6 +583,9 @@ public class MainActivity extends PermissionActivity {
                     errors.add(getString(R.string.can_not_encode_page, filename, format, page + 1));
                 }
             }
+        } else {
+            errors.add(getString(R.string.unknown_error, filename));
+            exception.printStackTrace();
         }
 
         return errors;
@@ -694,7 +604,6 @@ public class MainActivity extends PermissionActivity {
         setContentView(R.layout.activity_main);
 
         setListView();
-        setOutputFolder();
         setCheckBoxListeners();
 
         //TODO: save output formats selection between app runs
@@ -702,14 +611,6 @@ public class MainActivity extends PermissionActivity {
 
     @Override
     protected void onPermissionGranted(boolean isGranted) {
-
-        try {
-            if (!createOutputDirectory()) {
-                displayDialogErrorCreatingOutputDirectory();
-            }
-        } catch (SecurityException e) {
-            displayDialogErrorCreatingOutputDirectory();
-        }
     }
 
     /**
@@ -729,10 +630,6 @@ public class MainActivity extends PermissionActivity {
         );
     }
 
-    /**
-     *
-     * @param view
-     */
     public void onButtonClickStartConversion(View view) {
 
         final int formatsNumber = outputFormats.size();
@@ -742,57 +639,54 @@ public class MainActivity extends PermissionActivity {
 
         stopConversion = false;
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        new Thread(() -> {
 
-                List<String> errors = new ArrayList<>();
+            List<String> errors = new ArrayList<>();
 
-                int progressMax = formatsNumber * files.size();
-                setProgressBarVisible(progressMax, View.VISIBLE);
-                setAllInteractiveElementsEnabled(false);
+            int progressMax = formatsNumber * files.size();
+            setProgressBarVisible(progressMax, View.VISIBLE);
+            setAllInteractiveElementsEnabled(false);
 
-                int index = 0;
-                while (index < files.size() && !stopConversion) {
+            int index = 0;
+            while (index < files.size() && !stopConversion) {
 
-                    boolean isExceptionCaught = false;
-                    final FilenameUriTuple file = files.get(index);
+                boolean isExceptionCaught = false;
+                final FilenameUriTuple file = files.get(index);
 
-                    for (OutputFormat format: outputFormats) {
-                        try {
-                            // TODO: extract converting to separate util class
-                            convertFile(file, format);
-                            incrementProgressBar();
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                            isExceptionCaught = true;
+                for (OutputFormat format: outputFormats) {
+                    try {
+                        // TODO: extract converting to separate util class
+                        convertFile(file, format);
+                        incrementProgressBar();
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        isExceptionCaught = true;
 
-                            List<String> messages =
-                                getErrorMessage(e, file.getFilename(), format);
-                            errors.addAll(messages);
-                        }
-
-                        if (stopConversion) {
-                            break;
-                        }
+                        List<String> messages =
+                            getErrorMessage(e, file.getFilename(), format);
+                        errors.addAll(messages);
                     }
 
-                    if (isExceptionCaught) {
-                        index++;
-                    }
-
-                    if (!isExceptionCaught && !stopConversion) {
-                        removeTuple(file);
+                    if (stopConversion) {
+                        break;
                     }
                 }
 
-                hideStatus();
-                setProgressBarVisible(0, View.INVISIBLE);
-                setAllInteractiveElementsEnabled(true);
+                if (isExceptionCaught) {
+                    index++;
+                }
 
-                displayDialogReceivedExceptions(errors);
-                displayToastDone();
+                if (!isExceptionCaught && !stopConversion) {
+                    removeTuple(file);
+                }
             }
+
+            hideStatus();
+            setProgressBarVisible(0, View.INVISIBLE);
+            setAllInteractiveElementsEnabled(true);
+
+            displayDialogReceivedExceptions(errors);
+            displayToastDone();
         }).start();
     }
 

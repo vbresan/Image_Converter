@@ -1,6 +1,7 @@
 package biz.binarysolutions.imageconverter.image;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import org.beyka.tiffbitmapfactory.TiffBitmapFactory;
 import org.beyka.tiffbitmapfactory.TiffConverter;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import biz.binarysolutions.imageconverter.data.FilenameUriTuple;
 import biz.binarysolutions.imageconverter.data.OutputFormat;
 import biz.binarysolutions.imageconverter.exceptions.EncodeException;
 
@@ -67,15 +69,7 @@ public class TiffUtil {
         return substring + "." + format.getFileExtension();
     }
 
-    /**
-     *
-     * @param format
-     * @param in
-     * @param out
-     * @param directory
-     * @return
-     */
-    private static boolean convertDirectly
+    private static void convertDirectly
         (
             OutputFormat format,
             String       in,
@@ -93,13 +87,13 @@ public class TiffUtil {
         options.throwExceptions   = true;
 
         if (format == OutputFormat.BMP) {
-            return TiffConverter.convertTiffBmp(in, out, options, null);
+            TiffConverter.convertTiffBmp(in, out, options, null);
         } else if (format == OutputFormat.JPG) {
-            return TiffConverter.convertTiffJpg(in, out, options, null);
+            TiffConverter.convertTiffJpg(in, out, options, null);
         } else if (format == OutputFormat.PNG) {
-            return TiffConverter.convertTiffPng(in, out, options, null);
+            TiffConverter.convertTiffPng(in, out, options, null);
         } else {
-            throw new Exception();
+            throw new Exception("Unsupported output format for direct conversion.");
         }
     }
 
@@ -141,6 +135,12 @@ public class TiffUtil {
         )
             throws EncodeException {
 
+        /*
+           TODO:
+            For "0004 TEST.tif" this call returns null. It is calling
+            native method NativeDecoder.getBitmap(). Continue debugging
+            explorations from there.
+         */
         Bitmap bitmap    = TiffBitmapFactory.decodeFile(inFile, options);
         int    directory = options.inDirectoryNumber;
         try {
@@ -157,21 +157,15 @@ public class TiffUtil {
         }
     }
 
-    /**
-     *
-     * @param inFile
-     * @param format
-     * @param outputFolder
-     * @throws EncodeException
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void convertFromTIF
+    public static List<FilenameUriTuple> convertFromTIF
         (
             File         inFile,
             OutputFormat format,
             File         outputFolder
         )
             throws EncodeException {
+
+        List<FilenameUriTuple> outFiles = new ArrayList<>();
 
         TiffBitmapFactory.Options options = getOptions(inFile);
         options.inAvailableMemory  = 10000000;
@@ -190,14 +184,19 @@ public class TiffUtil {
             try {
                 convertFromTIFSinglePage(inFile, format, options, outFile);
             } catch (EncodeException e) {
+                //noinspection ResultOfMethodCallIgnored
                 outFile.delete();
                 directories.add(i);
             }
+
+            outFiles.add(new FilenameUriTuple(outFilename, Uri.fromFile(outFile)));
         }
 
         if (directories.size() > 0) {
             throw new EncodeException(directories);
         }
+
+        return outFiles;
     }
 
     /**

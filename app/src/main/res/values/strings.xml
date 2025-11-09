@@ -2,7 +2,7 @@
     <string name="app_name">Image Converter</string>
     <string name="add_files">Add files</string>
     <string name="unknown_file_name">Unknown file name</string>
-    <string name="input_files">Input files [%1$d]:</string>
+    <string name="input_files">Input files (%1$d):</string>
     <string name="confirm_remove">Are you sure you want to remove the following file from the list?\n\n%1$s\n</string>
     <string name="change">Change</string>
     <string name="output_folder">Output folder:</string>
@@ -14,15 +14,15 @@
     <string name="webp">WEBP</string>
     <string name="start_conversion">Start conversion</string>
     <string name="stop_conversion">Stop conversion</string>
-    <string name="error_creating_output_directory">Error creating output directory.</string>
     <string name="write_external_storage">In order to convert images, a permission to access the storage of your device is required.</string>
-    <string name="copying">Copying %1$s</string>
-    <string name="can_not_copy">Can not copy %1$s</string>
+    <string name="exporting">Exporting %1$s</string>
+    <string name="can_not_export">Can not export %1$s</string>
     <string name="converting_to">Converting %1$s to %2$s</string>
     <string name="can_not_decode">Can not decode %1$s</string>
     <string name="conversion_finished_with_errors">Conversion finished with following errors:</string>
     <string name="can_not_encode">Can not encode %1$s to %2$s</string>
     <string name="can_not_encode_page">Can not encode %1$s to %2$s, page %3$d</string>
+    <string name="unknown_error">Unknown error converting %1$s</string>
     <string name="stopping">Stopping …</string>
     <string name="done">Done!</string>
     <string name="out_of_memory">Not enough memory to convert %1$s to %2$s</string>

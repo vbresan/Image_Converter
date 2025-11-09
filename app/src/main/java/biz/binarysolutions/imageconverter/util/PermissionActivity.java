@@ -1,10 +1,11 @@
 package biz.binarysolutions.imageconverter.util;
 
+import static android.content.DialogInterface.OnClickListener;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,8 +15,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import biz.binarysolutions.imageconverter.R;
-
-import static android.content.DialogInterface.*;
 
 /**
  *
@@ -27,15 +26,7 @@ public abstract class PermissionActivity  extends AppCompatActivity {
 
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
-    /**
-     *
-     * @return
-     */
     private boolean shouldRequestPermission() {
-
-        if (Build.VERSION.SDK_INT < 23) {
-            return false;
-        }
 
         int granted = PackageManager.PERMISSION_GRANTED;
         return ContextCompat.checkSelfPermission(this, PERMISSION) != granted;
@@ -104,15 +95,13 @@ public abstract class PermissionActivity  extends AppCompatActivity {
             @NonNull String[] permissions,
             @NonNull int[]    results
         ) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+
         if (requestCode != PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE) {
             return;
         }
 
         int granted = PackageManager.PERMISSION_GRANTED;
-        if (results.length > 0 && results[0] == granted) {
-            onPermissionGranted(true);
-        } else {
-            onPermissionGranted(false);
-        }
+        onPermissionGranted(results.length > 0 && results[0] == granted);
     }
 }
