@@ -211,6 +211,13 @@ public class MainActivity extends PermissionActivity {
         );
     }
 
+    /**
+     * Starts file conversion on background thread.
+     * THREAD SAFETY: This method disables all UI interactions during
+     * conversion, ensuring 'files' and 'outputFormats' are only accessed by
+     * the conversion thread.
+     *
+     */
     private void startConversion() {
 
         final int formatsNumber = outputFormats.size();
