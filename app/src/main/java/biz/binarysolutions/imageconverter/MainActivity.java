@@ -13,7 +13,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
 import android.view.LayoutInflater;
@@ -129,15 +128,10 @@ public class MainActivity extends PermissionActivity {
         refreshInputFilesNumber();
     }
 
-    /**
-     *
-     * @param tuple
-     */
     private void removeTuple(final FilenameUriTuple tuple) {
 
         files.remove(tuple);
-
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
             adapter.remove(tuple);
             refreshInputFilesNumber();
         });
@@ -174,7 +168,7 @@ public class MainActivity extends PermissionActivity {
             sb.append(error).append("\n");
         }
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
 
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             View container = inflater.inflate(R.layout.dialog_errors, null);
@@ -199,12 +193,9 @@ public class MainActivity extends PermissionActivity {
 
     private void displayToastDone() {
 
-        new Handler(getMainLooper()).post(() ->
-            Toast.makeText(
-                this,
-                getString(R.string.done),
-                Toast.LENGTH_SHORT)
-            .show());
+        runOnUiThread(() ->
+            Toast.makeText(this, getString(R.string.done), Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void setListView() {
@@ -276,7 +267,7 @@ public class MainActivity extends PermissionActivity {
 
     private void publishStatus(final String status) {
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
 
             TextView textView = findViewById(R.id.textViewStatus);
             if (textView != null) {
@@ -288,7 +279,7 @@ public class MainActivity extends PermissionActivity {
 
     private void hideStatus() {
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
             TextView textView = findViewById(R.id.textViewStatus);
             if (textView != null) {
                 textView.setText("");
@@ -515,7 +506,7 @@ public class MainActivity extends PermissionActivity {
 
     private void setAllInteractiveElementsEnabled(final boolean enabled) {
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
 
             View view;
 
@@ -538,7 +529,7 @@ public class MainActivity extends PermissionActivity {
 
     private void setProgressBarVisible(final int max, final int visibility) {
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
 
             ProgressBar view = findViewById(R.id.progressBarConversion);
             if (view != null) {
@@ -550,7 +541,7 @@ public class MainActivity extends PermissionActivity {
 
     private void incrementProgressBar() {
 
-        new Handler(getMainLooper()).post(() -> {
+        runOnUiThread(() -> {
 
             ProgressBar view = findViewById(R.id.progressBarConversion);
             if (view != null) {
