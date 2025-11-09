@@ -53,7 +53,7 @@ import biz.binarysolutions.imageconverter.util.PermissionActivity;
  */
 public class MainActivity extends PermissionActivity {
 
-    private ActivityMainBinding binding;
+    protected ActivityMainBinding binding;
 
     private static final int REQUEST_CODE_PICK_FILE = 1;
 
@@ -194,6 +194,97 @@ public class MainActivity extends PermissionActivity {
         binding.listViewInputFiles.setAdapter(adapter);
         binding.listViewInputFiles.setOnItemClickListener(
             (p, v, pos, id) -> displayDialogConfirmFileRemove(pos)
+        );
+    }
+
+    private void addFiles() {
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+
+        startActivityForResult(
+            Intent.createChooser(intent, getString(R.string.add_files)),
+            REQUEST_CODE_PICK_FILE
+        );
+    }
+
+    private void startConversion() {
+
+        final int formatsNumber = outputFormats.size();
+        if (formatsNumber == 0) {
+            return;
+        }
+
+        stopConversion = false;
+
+        new Thread(() -> {
+
+            List<String> errors = new ArrayList<>();
+
+            int progressMax = formatsNumber * files.size();
+            setProgressBarVisible(progressMax, View.VISIBLE);
+            setAllInteractiveElementsEnabled(false);
+
+            int index = 0;
+            while (index < files.size() && !stopConversion) {
+
+                boolean isExceptionCaught = false;
+                final FilenameUriTuple file = files.get(index);
+
+                for (OutputFormat format: outputFormats) {
+                    try {
+                        // TODO: extract converting to separate util class
+                        convertFile(file, format);
+                        incrementProgressBar();
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                        isExceptionCaught = true;
+
+                        List<String> messages =
+                                getErrorMessage(e, file.getFilename(), format);
+                        errors.addAll(messages);
+                    }
+
+                    if (stopConversion) {
+                        break;
+                    }
+                }
+
+                if (isExceptionCaught) {
+                    index++;
+                }
+
+                if (!isExceptionCaught && !stopConversion) {
+                    removeTuple(file);
+                }
+            }
+
+            hideStatus();
+            setProgressBarVisible(0, View.INVISIBLE);
+            setAllInteractiveElementsEnabled(true);
+
+            displayDialogReceivedExceptions(errors);
+            displayToastDone();
+        }).start();
+    }
+
+    private void stopConversion() {
+
+        publishStatus(getString(R.string.stopping));
+        stopConversion = true;
+    }
+
+    private void setButtonListeners() {
+        binding.buttonAddFiles.setOnClickListener(
+            v -> addFiles()
+        );
+        binding.buttonStartConversion.setOnClickListener(
+            v -> startConversion()
+        );
+        binding.buttonStopConversion.setOnClickListener(
+            v -> stopConversion()
         );
     }
 
@@ -537,6 +628,7 @@ public class MainActivity extends PermissionActivity {
         setContentView(binding.getRoot());
 
         setListView();
+        setButtonListeners();
         setCheckBoxListeners();
 
         //TODO: save output formats selection between app runs
@@ -544,93 +636,6 @@ public class MainActivity extends PermissionActivity {
 
     @Override
     protected void onPermissionGranted(boolean isGranted) {
-    }
-
-    /**
-     *
-     * @param view
-     */
-    public void onButtonClickAddFiles(View view) {
-
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-
-        startActivityForResult(
-            Intent.createChooser(intent, getString(R.string.add_files)),
-            REQUEST_CODE_PICK_FILE
-        );
-    }
-
-    public void onButtonClickStartConversion(View view) {
-
-        final int formatsNumber = outputFormats.size();
-        if (formatsNumber == 0) {
-            return;
-        }
-
-        stopConversion = false;
-
-        new Thread(() -> {
-
-            List<String> errors = new ArrayList<>();
-
-            int progressMax = formatsNumber * files.size();
-            setProgressBarVisible(progressMax, View.VISIBLE);
-            setAllInteractiveElementsEnabled(false);
-
-            int index = 0;
-            while (index < files.size() && !stopConversion) {
-
-                boolean isExceptionCaught = false;
-                final FilenameUriTuple file = files.get(index);
-
-                for (OutputFormat format: outputFormats) {
-                    try {
-                        // TODO: extract converting to separate util class
-                        convertFile(file, format);
-                        incrementProgressBar();
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        isExceptionCaught = true;
-
-                        List<String> messages =
-                            getErrorMessage(e, file.getFilename(), format);
-                        errors.addAll(messages);
-                    }
-
-                    if (stopConversion) {
-                        break;
-                    }
-                }
-
-                if (isExceptionCaught) {
-                    index++;
-                }
-
-                if (!isExceptionCaught && !stopConversion) {
-                    removeTuple(file);
-                }
-            }
-
-            hideStatus();
-            setProgressBarVisible(0, View.INVISIBLE);
-            setAllInteractiveElementsEnabled(true);
-
-            displayDialogReceivedExceptions(errors);
-            displayToastDone();
-        }).start();
-    }
-
-    /**
-     *
-     * @param view
-     */
-    public void onButtonClickStopConversion(View view) {
-
-        publishStatus(getString(R.string.stopping));
-        stopConversion = true;
     }
 
     /**

@@ -109,30 +109,17 @@ public class MainActivityGoogle extends MainActivity
         }));
    }
 
-    /**
-     *
-     * @param id
-     * @param format
-     */
-    private void setCheckBoxListener(int id, OutputFormat format) {
-
-        CheckBox checkBox = findViewById(id);
-        if (checkBox == null) {
-            return;
-        }
+    private void setCheckBoxListener(CheckBox checkBox, OutputFormat format) {
 
         checkBox.setOnCheckedChangeListener(
             new RestrictedOutputFormatListener(outputFormats, format, this)
         );
     }
 
-    /**
-     *
-     */
     private void setCheckBoxListeners() {
 
-        setCheckBoxListener(R.id.checkBoxBMP,  OutputFormat.BMP);
-        setCheckBoxListener(R.id.checkBoxTIF,  OutputFormat.TIF);
+        setCheckBoxListener(binding.checkBoxBMP,  OutputFormat.BMP);
+        setCheckBoxListener(binding.checkBoxTIF,  OutputFormat.TIF);
     }
 
     private PendingPurchasesParams getPendingPurchaseParams() {
