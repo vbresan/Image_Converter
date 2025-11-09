@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import biz.binarysolutions.imageconverter.data.FilenameUriTuple;
 import biz.binarysolutions.imageconverter.data.OutputFormat;
@@ -62,7 +63,7 @@ public class MainActivity extends PermissionActivity {
     private final List<FilenameUriTuple> files         = new ArrayList<>();
     protected List<OutputFormat>         outputFormats = new ArrayList<>();
 
-    private volatile boolean stopConversion = false;
+    private final AtomicBoolean isConverting = new AtomicBoolean(false);
 
     /**
      *
@@ -217,7 +218,9 @@ public class MainActivity extends PermissionActivity {
             return;
         }
 
-        stopConversion = false;
+        if (!isConverting.compareAndSet(false, true)) {
+            return;
+        }
 
         new Thread(() -> {
 
@@ -228,7 +231,7 @@ public class MainActivity extends PermissionActivity {
             setAllInteractiveElementsEnabled(false);
 
             int index = 0;
-            while (index < files.size() && !stopConversion) {
+            while (index < files.size() && isConverting.get()) {
 
                 boolean isExceptionCaught = false;
                 final FilenameUriTuple file = files.get(index);
@@ -243,23 +246,19 @@ public class MainActivity extends PermissionActivity {
                         isExceptionCaught = true;
 
                         List<String> messages =
-                                getErrorMessage(e, file.getFilename(), format);
+                            getErrorMessage(e, file.getFilename(), format);
                         errors.addAll(messages);
-                    }
-
-                    if (stopConversion) {
-                        break;
                     }
                 }
 
                 if (isExceptionCaught) {
                     index++;
-                }
-
-                if (!isExceptionCaught && !stopConversion) {
+                } else {
                     removeTuple(file);
                 }
             }
+            
+            isConverting.set(false);
 
             hideStatus();
             setProgressBarVisible(0, View.INVISIBLE);
@@ -270,10 +269,16 @@ public class MainActivity extends PermissionActivity {
         }).start();
     }
 
+    /**
+     * Completes the current file conversion and stops with the next file.
+     * This means:
+     *  - the current file is converted to all selected formats
+     *  - if the current file is multipage TIF, all pages will be converted
+     *      to all selected formats
+     */
     private void stopConversion() {
-
         publishStatus(getString(R.string.stopping));
-        stopConversion = true;
+        isConverting.set(false);
     }
 
     private void setButtonListeners() {
