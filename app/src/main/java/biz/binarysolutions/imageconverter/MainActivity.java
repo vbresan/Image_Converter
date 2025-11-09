@@ -187,7 +187,7 @@ public class MainActivity extends PermissionActivity {
             new AlertDialog.Builder(MainActivity.this)
                 .setTitle(android.R.string.dialog_alert_title)
                 .setView(container)
-                //TODO: call the same method when dialog is cancelled!
+                .setOnCancelListener(dialog -> onErrorDialogDismissed())
                 .setNegativeButton(
                     android.R.string.ok,
                     (dialog, which) -> onErrorDialogDismissed()
