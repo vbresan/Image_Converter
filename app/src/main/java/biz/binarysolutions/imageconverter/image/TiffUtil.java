@@ -146,6 +146,7 @@ public class TiffUtil {
         try {
             if (bitmap != null) {
                 Converter.encodeBitmap(bitmap, format, outFile);
+                bitmap.recycle();
             } else {
                 String in  = inFile.getAbsolutePath();
                 String out = outFile.getAbsolutePath();

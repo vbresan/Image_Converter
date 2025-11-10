@@ -90,6 +90,7 @@ public class Converter {
 
         File cache = new File(cacheDirectory, "temp.png");
         encodeUsingNativeAPI(bitmap, Bitmap.CompressFormat.PNG, cache);
+        bitmap.recycle();
 
         Bitmap reloaded = BitmapFactory.decodeFile(cache.getAbsolutePath());
         cache.delete();

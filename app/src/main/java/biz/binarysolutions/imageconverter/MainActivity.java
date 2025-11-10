@@ -318,23 +318,24 @@ public class MainActivity extends PermissionActivity {
 
     private @Nullable String getMimeType(Uri uri) {
 
-        String mimeType = null;
-
         Cursor cursor = getContentResolver().query(
             uri, new String[] { MediaStore.MediaColumns.MIME_TYPE },
             null, null, null
         );
-
-        if (cursor != null) {
-            if (cursor.moveToNext()) {
-                try {
-                    mimeType = cursor.getString(0);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
-            cursor.close();
+        if (cursor == null) {
+            return null;
         }
+
+        String mimeType = null;
+        if (cursor.moveToNext()) {
+            try {
+                mimeType = cursor.getString(0);
+            } catch (Exception e) {
+                // can't get mime type, do nothing as caller handles it
+                e.printStackTrace();
+            }
+        }
+        cursor.close();
 
         return mimeType;
     }
@@ -445,34 +446,45 @@ public class MainActivity extends PermissionActivity {
         return TiffUtil.convertFromTIF(file, format, getCacheDir());
     }
 
-    /**
-     *
-     * @return
-     * @param uri
-     */
-    private InputStream getInputStream(Uri uri) throws DecodeException {
-
-        InputStream is;
+    private Bitmap getBitmap(Uri uri) throws DecodeException {
 
         try {
-            is = getContentResolver().openInputStream(uri);
+            InputStream is     = getContentResolver().openInputStream(uri);
+            Bitmap      bitmap = BitmapFactory.decodeStream(is);
+
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                // bitmap already decoded, user needs not to know about error
+                e.printStackTrace();
+            }
+
+            return bitmap;
         } catch (FileNotFoundException e) {
             throw new DecodeException(e);
         }
-
-        return is;
     }
 
-    private File getTempFile(String filename, InputStream is)
+    private File getTempFile(String filename, Uri uri)
         throws DecodeException {
 
         try {
+            InputStream is = getContentResolver().openInputStream(uri);
             if (is == null) {
                 throw new IOException("Re-opened input stream is null.");
             }
 
             File file = File.createTempFile(filename, "", getCacheDir());
             FileUtil.copy(is, file);
+
+            try {
+                is.close();
+            } catch (IOException e) {
+                // temp file already created, user needs not to know about error
+                e.printStackTrace();
+            }
 
             return file;
         } catch (IOException e) {
@@ -501,9 +513,7 @@ public class MainActivity extends PermissionActivity {
         publishStatus(getString(R.string.converting_to, file, format));
 
         String inFilename = file.getFilename();
-
-        InputStream is     = getInputStream(file.getUri());
-        Bitmap      bitmap = BitmapFactory.decodeStream(is);
+        Bitmap bitmap     = getBitmap(file.getUri());
 
         // TODO: remove this once tif library is fixed
         if (inFilename.endsWith(".gif") && format == OutputFormat.TIF) {
@@ -531,11 +541,10 @@ public class MainActivity extends PermissionActivity {
                 throw e;
             }
 
+            bitmap.recycle();
             return List.of(new FilenameUriTuple(outFilename, Uri.fromFile(outFile)));
         } else {
-            is = getInputStream(file.getUri());
-            File tempFile = getTempFile(inFilename, is);
-
+            File tempFile = getTempFile(inFilename, file.getUri());
             try {
                 return convertUsingNonNativeAPI(tempFile, format);
             } finally {
