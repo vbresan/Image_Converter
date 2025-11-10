@@ -397,10 +397,20 @@ public class MainActivity extends PermissionActivity {
             }
 
             if (in != null) {
-                in.close();
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // do not propagate the exception
+                    e.printStackTrace();
+                }
             }
             if (out != null) {
-                out.close();
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // do not propagate the exception
+                    e.printStackTrace();
+                }
             }
         } catch (IOException e) {
             throw new ExportException(e);
@@ -452,13 +462,13 @@ public class MainActivity extends PermissionActivity {
             InputStream is     = getContentResolver().openInputStream(uri);
             Bitmap      bitmap = BitmapFactory.decodeStream(is);
 
-            try {
-                if (is != null) {
+            if (is != null) {
+                try {
                     is.close();
+                } catch (IOException e) {
+                    // do not propagate the exception
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                // bitmap already decoded, user needs not to know about error
-                e.printStackTrace();
             }
 
             return bitmap;
@@ -482,7 +492,7 @@ public class MainActivity extends PermissionActivity {
             try {
                 is.close();
             } catch (IOException e) {
-                // temp file already created, user needs not to know about error
+                // do not propagate the exception
                 e.printStackTrace();
             }
 
@@ -515,7 +525,9 @@ public class MainActivity extends PermissionActivity {
         String inFilename = file.getFilename();
         Bitmap bitmap     = getBitmap(file.getUri());
 
-        // TODO: remove this once tif library is fixed
+        /* TODO: remove this once tif library is fixed
+            https://github.com/Beyka/Android-TiffBitmapFactory/issues/46
+        */
         if (inFilename.endsWith(".gif") && format == OutputFormat.TIF) {
             try {
                 bitmap = Converter.recodeGIFBitmap(bitmap, getCacheDir());
