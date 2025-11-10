@@ -5,37 +5,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- *
- */
 public class FileUtil {
 
-    /**
-     *
-     * @param inStream
-     * @param to
-     */
-    public static void copy(InputStream inStream, File to) throws IOException {
+    public static void copy(InputStream in, File to) throws IOException {
 
-        FileOutputStream outStream = null;
-
-        try {
-
-            outStream = new FileOutputStream(to);
+        try (FileOutputStream out = new FileOutputStream(to)) {
 
             byte[] buffer = new byte[8 * 1024];
             int bytesRead;
 
-            while ((bytesRead = inStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
-            }
-
-        } finally {
-            if (inStream != null) {
-                inStream.close();
-            }
-            if (outStream != null) {
-                outStream.close();
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
             }
         }
     }
