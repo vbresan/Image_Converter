@@ -4,6 +4,8 @@ Changes:
 * Setting minimum Android SDK 29.
 * Targeting Android SDK 35.
 * Updating dependant libraries.
+* Using Material Design 3 with dynamic colors.
+* Explicitly releasing bitmap memory after usage.
 
 Google version only:
 * Updating AdMob library.

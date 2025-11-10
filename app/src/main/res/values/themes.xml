@@ -1,8 +1,4 @@
 <resources>
-    <style name="BaseTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
+    <style name="BaseTheme" parent="Theme.Material3.DayNight" />
     <style name="AppTheme" parent="BaseTheme" />
 </resources>

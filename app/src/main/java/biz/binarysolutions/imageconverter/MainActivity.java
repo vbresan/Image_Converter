@@ -25,6 +25,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.color.DynamicColors;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -657,6 +659,7 @@ public class MainActivity extends PermissionActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        DynamicColors.applyToActivityIfAvailable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
