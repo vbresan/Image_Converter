@@ -132,4 +132,6 @@
         android:enabled="false"
     />
 
+    <include layout="@layout/bottom_bar" />
+
 </LinearLayout>
