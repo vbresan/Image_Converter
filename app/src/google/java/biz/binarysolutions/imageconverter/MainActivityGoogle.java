@@ -2,7 +2,6 @@ package biz.binarysolutions.imageconverter;
 
 import static com.android.billingclient.api.BillingClient.SkuType.SUBS;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,6 +41,7 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -376,7 +376,7 @@ public class MainActivityGoogle extends MainActivity
             updatePrice(textView);
         }
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
             .setTitle(android.R.string.dialog_alert_title)
             .setView(container)
             .setPositiveButton(getString(R.string.unlock_full_version), this)

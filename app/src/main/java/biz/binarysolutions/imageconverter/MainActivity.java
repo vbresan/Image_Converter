@@ -2,7 +2,6 @@ package biz.binarysolutions.imageconverter;
 
 import static android.provider.OpenableColumns.DISPLAY_NAME;
 
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -26,6 +25,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.color.DynamicColors;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -138,7 +138,7 @@ public class MainActivity extends PermissionActivity {
 
         final FilenameUriTuple tuple = files.get(index);
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
             .setTitle(android.R.string.dialog_alert_title)
             .setMessage(getString(R.string.confirm_remove, tuple.getFilename()))
             .setNegativeButton(android.R.string.cancel, null)
@@ -171,7 +171,7 @@ public class MainActivity extends PermissionActivity {
                 textView.setText(sb);
             }
 
-            new AlertDialog.Builder(MainActivity.this)
+            new MaterialAlertDialogBuilder(this)
                 .setTitle(android.R.string.dialog_alert_title)
                 .setView(container)
                 .setOnCancelListener(dialog -> onErrorDialogDismissed())
@@ -666,6 +666,8 @@ public class MainActivity extends PermissionActivity {
         setListView();
         setButtonListeners();
         setCheckBoxListeners();
+
+        new FlavorSpecific(this).initialize();
 
         //TODO: save output formats selection between app runs
     }

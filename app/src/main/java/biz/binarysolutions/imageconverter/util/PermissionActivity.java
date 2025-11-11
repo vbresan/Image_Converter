@@ -3,7 +3,6 @@ package biz.binarysolutions.imageconverter.util;
 import static android.content.DialogInterface.OnClickListener;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -13,6 +12,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import biz.binarysolutions.imageconverter.R;
 
@@ -53,12 +54,9 @@ public abstract class PermissionActivity  extends AppCompatActivity {
         );
     }
 
-    /**
-     *
-     */
     private void displayDialogRequestPermission() {
 
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
             .setTitle(android.R.string.dialog_alert_title)
             .setMessage(R.string.write_external_storage)
             .setPositiveButton(android.R.string.ok, new OnClickListener() {
