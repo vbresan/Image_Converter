@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/buttonSupport"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/show_support"
+    android:textAllCaps="true"
+    android:textStyle="bold"
+    style="@style/Widget.Material3.Button.TextButton"
+/>
