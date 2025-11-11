@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY price "€15 EUR">
+    <!ENTITY price "€20 EUR">
 ]>
 <resources>
     <string name="output_format_not_available">Selected output image format is not available in free app version.</string>
