@@ -3,8 +3,10 @@ _Convert images between formats: BMP, GIF, JPG, PNG, TIF, WEBP_
 
 ## Screenshots
 <p float="center">
-  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/1.png" width="33%" alt="Screenshot no images added" title="Screenshot no images added" />
-  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/2.png" width="33%" alt="Screenshot images added" title="Screenshot images added" />
+  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/1.png" width="20%" alt="Screenshot no images added, dark theme" title="Screenshot no images added, dark theme" />
+  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/2.png" width="20%" alt="Screenshot images added, dark theme" title="Screenshot images added, dark theme" />
+  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/3.png" width="20%" alt="Screenshot no images added, light theme" title="Screenshot no images added, light theme" />
+  <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/4.png" width="20%" alt="Screenshot images added, light theme" title="Screenshot images added, light theme" />
 </p>
 
 ## About the app
