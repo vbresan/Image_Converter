@@ -1,10 +1,7 @@
 # Image Converter
 _Convert images between formats: BMP, GIF, JPG, PNG, TIF, WEBP_
 
-_Note: The app is targeting Android API version 30. Currently it does not work with newer devices that do not allow direct filesystem access._
-
 ## Screenshots
-
 <p float="center">
   <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/1.png" width="33%" alt="Screenshot no images added" title="Screenshot no images added" />
   <img src="https://github.com/vbresan/Image_Converter/blob/master/metadata/en-US/images/phoneScreenshots/2.png" width="33%" alt="Screenshot images added" title="Screenshot images added" />
@@ -23,6 +20,18 @@ App enables users to convert various image files into file type of their choice.
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=biz.binarysolutions.imageconverter.ggl)
 [<img src="https://raw.githubusercontent.com/andOTP/andOTP/master/assets/badges/get-it-on-github.png" alt="Get it on GitHub" height="80">](https://github.com/vbresan/Image_Converter/releases/latest)
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/biz.binarysolutions.imageconverter)
+
+## Support and contributions
+Open-source projects often struggle to be financially sustainable. You are more 
+than welcome to sponsor the project by donating via 
+[Ko-fi](https://ko-fi.com/vbresan/?utm_source=imageconverter&amp;utm_medium=github-readme&amp;utm_campaign=regular) 
+or 
+[Liberapay](https://liberapay.com/vbresan/?utm_source=imageconverter&amp;utm_medium=github-readme&amp;utm_campaign=regular). 
+Such support can help ensure the continued development of this app.
+
+Additionally, you can show your support by starring the repository and joining 
+the 
+[stargazers](https://github.com/vbresan/Image_Converter/stargazers)!
 
 ## Alternative apps
 ### Free and open-source
