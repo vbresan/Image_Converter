@@ -35,6 +35,8 @@ Additionally, you can show your support by starring the repository and joining
 the 
 [stargazers](https://github.com/vbresan/Image_Converter/stargazers)!
 
+<img src="https://binarysolutions.biz/wp-content/uploads/2025/10/WordPress-footer-image.png" alt="Co-financed by the Grad Split" title="Co-financed by the Grad Split">
+
 ## Alternative apps
 ### Free and open-source
 * Image Toolbox [[GitHub](https://github.com/T8RIN/ImageToolbox)] [[F-Droid](https://f-droid.org/packages/ru.tech.imageresizershrinker/)] [[Google Play](https://play.google.com/store/apps/details?id=ru.tech.imageresizershrinker)]
