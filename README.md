@@ -35,7 +35,7 @@ Additionally, you can show your support by starring the repository and joining
 the 
 [stargazers](https://github.com/vbresan/Image_Converter/stargazers)!
 
-<img src="https://binarysolutions.biz/wp-content/uploads/2025/10/WordPress-footer-image.png" alt="Co-financed by the Grad Split" title="Co-financed by the Grad Split">
+![Co-financed by the Grad Split](https://binarysolutions.biz/wp-content/uploads/2025/10/WordPress-footer-image.png "Co-financed by the Grad Split")
 
 ## Alternative apps
 ### Free and open-source
