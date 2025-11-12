@@ -1,7 +1,7 @@
 apply plugin: "com.android.application"
 
 android {
-    compileSdk 35
+    compileSdk = 35
     namespace "biz.binarysolutions.imageconverter"
 
     compileOptions {
@@ -13,8 +13,8 @@ android {
         applicationId "biz.binarysolutions.imageconverter"
         minSdk 29
         targetSdk 35
-        versionCode 9
-        versionName "2.0"
+        versionCode 11
+        versionName "2.0.1"
 
         setProperty("archivesBaseName", "$applicationId-$versionName")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -57,7 +57,7 @@ dependencies {
     implementation "com.google.android.material:material:1.13.0"
     implementation "com.android.support:support-annotations:28.0.0"
 
-    implementation "io.github.beyka:Android-TiffBitmapFactory:0.9.9.1"
+    implementation "com.github.T8RIN:TiffDecoder:1.0.5"
 
     googleImplementation "com.google.android.gms:play-services-ads:24.7.0"
     googleImplementation "com.android.billingclient:billing:8.1.0"
